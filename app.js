@@ -1,9 +1,9 @@
-const express = require("express");
+const express = require('express');
+const jobRouter = require('./routes/jobRoutes')
+
 const app = express();
 
-app.get('/', (req, res) => {
-    res.end('welcome')
-})
+app.use('/api/v1/jobs', jobRouter)
 
 app.listen(8000, ()=>{
     console.log('Server started on port 8000')
