@@ -12,11 +12,20 @@ const Job = require('../models/jobModel')
 // And here we use async with the function so as that the await doesn't stop the running code and only the lines we need to
 // implement after the function is resolved or rejected by stopped
 exports.getAllJobs = async (req, res) => {
-
+    
     try {
-        // find returns an array of jobs and converts them to js objects
-        const jobs = await Job.find()
+        // BUILDING QUERY
+        const query_obj = {...req.query}
+        const execluded_fields = ['page', 'sort', 'limit', 'fields']
 
+        execluded_fields.forEach( el => delete query_obj[el])
+
+        // find returns an array of jobs and converts them to js objects
+        const query =  Job.find(query_obj)
+
+
+        // EXECUTE QUERY
+        const jobs = await query
         res.status(200).json({
             status: 'success',
             results: jobs.length,
