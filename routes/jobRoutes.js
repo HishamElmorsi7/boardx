@@ -10,8 +10,8 @@ router
 
 router
     .route('/:id')
-    .get(/* get a job with a specific id */)
-    .patch(/* alter a job */)
-    .delete(/* delete a job */)
+    .get(jobController.getJob)
+    .patch(jobController.updateJob)
+    .delete(jobController.deleteJob)
 
 module.exports = router
