@@ -15,17 +15,34 @@ exports.getAllJobs = async (req, res) => {
     
     try {
         // BUILDING QUERY
-        const query_obj = {...req.query}
-        const execluded_fields = ['page', 'sort', 'limit', 'fields']
+        let queryObj = {...req.query}
 
-        execluded_fields.forEach( el => delete query_obj[el])
+        // excluding fields
+        const execludedFields = ['page', 'sort', 'limit', 'fields']
+        execludedFields.forEach( el => delete queryObj[el])
+
+        // altering queryObj to be an appropiate filter obj that can be passed to find
+        let queryStr = JSON.stringify(queryObj)
+        queryStr = queryStr.replace(/\b(gt|gte|lt|lte)\b/g, match => `$${match}`)
+        queryObj = JSON.parse(queryStr)
+
 
         // find returns an array of jobs and converts them to js objects
-        const query =  Job.find(query_obj)
+        let query =  Job.find(queryObj)
+
+        // SORTING
+        if(req.query.sort) {
+            const sort_by = req.query.sort.split(',').join(' ')
+            query = query.sort(sort_by)
+        } else {
+            query.sort('-created_at')
+        }
 
 
         // EXECUTE QUERY
         const jobs = await query
+
+        // RESPONSE
         res.status(200).json({
             status: 'success',
             results: jobs.length,
