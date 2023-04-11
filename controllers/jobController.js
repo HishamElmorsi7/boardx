@@ -38,6 +38,13 @@ exports.getAllJobs = async (req, res) => {
             query.sort('-created_at')
         }
 
+        // fields limiting
+        if(req.query.fields){
+            let fields = req.query.fields.split(',').join(' ')
+            fields += ' '
+            query.select(fields)
+        }
+
 
         // EXECUTE QUERY
         const jobs = await query
