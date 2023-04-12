@@ -17,7 +17,7 @@ exports.getAllJobs = async (req, res) => {
         // BUILDING QUERY
         let queryObj = {...req.query}
 
-        // excluding fields
+        // EXECLUDING FIELDS
         const execludedFields = ['page', 'sort', 'limit', 'fields']
         execludedFields.forEach( el => delete queryObj[el])
 
@@ -35,14 +35,28 @@ exports.getAllJobs = async (req, res) => {
             const sort_by = req.query.sort.split(',').join(' ')
             query = query.sort(sort_by)
         } else {
-            query.sort('-created_at')
+            query = query.sort('-created_at')
         }
 
         // fields limiting
         if(req.query.fields){
             let fields = req.query.fields.split(',').join(' ')
             fields += ' '
-            query.select(fields)
+            query = query.select(fields)
+        }
+
+        // Pagination
+        // for example: page 3 and limit 4 => skip(8) => skip(3-1 * 4) => skip((page-1) * limit)
+        const page = req.query.page * 1 || 1
+        const limit = req.query.limit * 1 || 100
+        const skip = (page - 1) * limit
+
+        query = query.skip(skip).limit(limit)
+        // if he only required a specific page I will throw error but with default if there is no pages I will send empty data
+
+        if (req.query.page){
+            const numOfDocs = Job.countDocuments()
+            if(skip >= numOfDocs) throw new Error('This page does not exist')
         }
 
 
