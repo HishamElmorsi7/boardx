@@ -24,7 +24,7 @@ const jobSchema = new mongoose.Schema({
         trim: true,
         required: [true, 'A job must have a location']
     },
-    Experience_level: {
+    experience_level: {
         type: String,
         trim: true,
         required: [true, 'A job must have an experience level']
