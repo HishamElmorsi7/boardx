@@ -4,6 +4,10 @@ const jobController = require('../controllers/jobController')
 const router = express.Router();
 
 router
+    .route('/lastFiveJobs')
+    .get(jobController.lastFiveJobsAlias, jobController.getAllJobs)
+    
+router
     .route('/')
     .get(jobController.getAllJobs)
     .post(jobController.createJob)
