@@ -40,8 +40,14 @@ class ApiFeatures {
     limitFields() {
         if(this.queryString.fields){
             let fields = this.queryString.fields.split(',').join(' ')
-            fields += ' '
+            console.log(fields)
+            try {
+
             this.query = this.query.select(fields)
+                
+            } catch (error) {
+                console.log(error)   
+            }
         }
 
         return this
@@ -49,7 +55,7 @@ class ApiFeatures {
 
     paginate() {
         const page = this.queryString.page * 1 || 1
-        const limit = this.queryString.limit * 1 || 10
+        const limit = this.queryString.limit * 1 || 100
         // for example: page 3 and limit 4 => skip(8) => skip(3-1 * 4) => skip((page-1) * limit)
         const skip = (page - 1) * limit
 

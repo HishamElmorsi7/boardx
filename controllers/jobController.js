@@ -1,5 +1,5 @@
 const Job = require('../models/jobModel')
-const ApiFeatures = require('../utils/ApiFeatures')
+const ApiFeatures = require('../utils/apiFeatures')
 
 // Note: When sending data in body we set the heading to json because the server can only parse the data
 //  to body => req.body using Json.parse middleware only if the heading is set to json.
@@ -29,7 +29,8 @@ exports.getAllJobs = async (req, res) => {
 
         query = apiFeatures.query
 
-
+        // pre find hook middleware will be executed beore this find query executed 
+        // you will find that in GetAll
         const jobs = await query
 
         // RESPONSE
@@ -69,7 +70,6 @@ exports.getJob = async (req, res) => {
 }
 
 exports.createJob = async (req, res) => {
-    console.log(req.body)
 
     try {
         const newJob = await Job.create(req.body)
@@ -79,8 +79,7 @@ exports.createJob = async (req, res) => {
                 job: newJob
             }
         })
-    }
-    catch(error) {
+    } catch(error) {
         res.status(400).json({
             status: 'failed',
             message: error
@@ -94,6 +93,8 @@ exports.updateJob = async (req, res) => {
         const update = req.body
         const job = await Job.findByIdAndUpdate(id, update, {
             new: true,
+            // To make sure to run validators, if we didn't run validators
+            // data will be forced
             runValidators: true
         })
     
@@ -141,4 +142,75 @@ exports.lastFiveJobsAlias = (req, res, next) => {
     queryObj.sort='-created_at'
     queryObj.limit='5'
     next()
+}
+
+exports.getStats = async (req, res) => {
+    try {
+            // Expressions only provides additional features to queries
+            const stats =   await Job.aggregate(
+            [
+                {
+                    $match: {
+                        $expr: {
+                            $eq: [{$year: '$created_at'}, req.params.year * 1]
+                        }
+                    }
+                },
+        
+                {
+                    // allows expressions without 
+                    $group: {
+                        // For each document in the input collection, the $month 
+                        // operator extracts the month from the created_at field, and 
+                        // the resulting value is used as the grouping criterion for the $group
+                        // stage. This means that all documents with the same month value will be
+                        // grouped together in the output of the $group stage.
+
+                        _id: {$month: '$created_at'},
+                        numOfJobs: {$sum: 1},
+                        // '$title' here means each value of document but title means the field
+                        jobs: {$push: '$title'}
+                    },
+
+                },
+                {
+                    $addFields: {
+                        // note that '$field' returns something as we need to assign the value
+                        // of the id field to month but in project we don't need to 
+                        // reference the value
+                        month: '$_id'
+                    }
+                },
+
+                {
+                    // Despite of being able to use expression but we here want only to hide
+                    // the field itself
+                    $project: {_id: 0}
+                },
+
+                {
+                    $sort: { month: -1 }
+                },
+                {
+                    $limit: 2
+                }
+        
+            ]
+        )
+
+        res.status(200).json({
+            status: 'success',
+            data:{
+                stats
+            }
+        })
+    } catch(error) {
+        console.log(error)
+        res.status(404).json({
+            status: 'failed',
+            message: error
+        })
+    }
+
+
 }

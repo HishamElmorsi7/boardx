@@ -1,5 +1,7 @@
 const express = require('express');
 const jobRouter = require('./routes/jobRoutes')
+const AppError = require('./utils/appError')
+const globalErrorHandler = require('./controllers/errorController')
 
 const app = express();
 
@@ -9,4 +11,30 @@ app.use(express.json())
 // ROUTES
 app.use('/api/v1/jobs', jobRouter)
 
+// NON EXISTING ROUTES
+// all here matches all http methods
+
+// If the next function receives an argument, no matter what it is,
+// Express will automatically know that there was an error
+// so it will assume that whatever we pass into next
+// is gonna be an error. so the other middlewares on the stacks won't be executed
+// and the global error handling middleware will be executed
+app.all('*', (req, res, next)=> {
+    // res.status(404).json({
+    //     status: 'fail',
+    //     message: `Can't find ${req.originalUrl} on the server`
+    // })`Can't find ${req.originalUrl} on the server`
+
+    // What we pass to Error constructor is the message that we can call with error.message()
+    // const error = new Error(`Can't find ${req.originalUrl} on the server`)
+    // error.statusCode = 404
+    // error.status = 'fail'
+
+
+
+    
+    next(new AppError(`Can't find ${req.originalUrl} on the server`, 404))
+})
+
+app.use(globalErrorHandler)
 module.exports = app

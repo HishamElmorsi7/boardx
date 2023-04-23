@@ -3,6 +3,7 @@ const jobController = require('../controllers/jobController')
 
 const router = express.Router();
 
+router.route('/stats/:year').get(jobController.getStats)
 router
     .route('/lastFiveJobs')
     .get(jobController.lastFiveJobsAlias, jobController.getAllJobs)
