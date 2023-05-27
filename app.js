@@ -35,6 +35,6 @@ app.all('*', (req, res, next)=> {
     
     next(new AppError(`Can't find ${req.originalUrl} on the server`, 404))
 })
-
+// Remember that the middleware is called and passed the args by expres
 app.use(globalErrorHandler)
 module.exports = app

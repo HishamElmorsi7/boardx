@@ -1,5 +1,7 @@
 const Job = require('../models/jobModel')
 const ApiFeatures = require('../utils/apiFeatures')
+const AppError = require('../utils/appError')
+const catchAsync = require('../utils/catchAsync')
 
 // Note: When sending data in body we set the heading to json because the server can only parse the data
 //  to body => req.body using Json.parse middleware only if the heading is set to json.
@@ -13,13 +15,15 @@ const ApiFeatures = require('../utils/apiFeatures')
 // And here we use async with the function so as that the await doesn't stop the running code and only the lines we need to
 // implement after the function is resolved or rejected by stopped
 
-exports.getAllJobs = async (req, res) => {
+
+exports.getAllJobs = catchAsync(
+    async (req, res) => {
     
-    try {
         let query = Job.find({})
         const queryString = req.query
 
-
+        // x + 1 will result in something went wrong as it is non operational
+        x + 1
         const apiFeatures = new ApiFeatures(query, queryString)
         apiFeatures
             .filter()
@@ -42,18 +46,26 @@ exports.getAllJobs = async (req, res) => {
             }
         })
         
-    } catch (error) {
-        res.status(404).json({
-            status: 'failed',
-            message: error
-        })
     }
-}
+)
 
-exports.getJob = async (req, res) => {
-    try {
+
+exports.getJob = catchAsync(
+    async (req, res, next) => {
         const id = req.params.id
+        // An error coming from the next line won't have isOperational and will
+        // be caught in catchAsync
         const job = await Job.findById(id)
+
+        // note that no error will be resulted if didn't find the job to get or update
+        // or delete
+        if(!job) {
+            // we say here return as without it the code will continue to execute
+            // and then after that the global error will be called after finishing 
+            // this function, which will result an error as we try to set headers
+            // again into the global error
+            return next(new AppError('No job found with that ID', 404))
+        }
 
         res.status(200).json({
             status: 'success',
@@ -61,17 +73,14 @@ exports.getJob = async (req, res) => {
                 job
             }
         })
-    } catch (error) {
-        res.status(404).json({
-            status: 'failed',
-            message: error
-        })
+        console.log('hi after sending status')
+
     }
-}
+)
 
-exports.createJob = async (req, res) => {
+exports.createJob = catchAsync(
+    async (req, res) => {
 
-    try {
         const newJob = await Job.create(req.body)
         res.status(201).json({
             status: 'success',
@@ -79,16 +88,13 @@ exports.createJob = async (req, res) => {
                 job: newJob
             }
         })
-    } catch(error) {
-        res.status(400).json({
-            status: 'failed',
-            message: error
-        })
     }
-}
+)
 
-exports.updateJob = async (req, res) => {
-    try {
+exports.updateJob = catchAsync(
+    async (req, res, next) => {
+
+        
         const id = req.params.id;
         const update = req.body
         const job = await Job.findByIdAndUpdate(id, update, {
@@ -97,6 +103,12 @@ exports.updateJob = async (req, res) => {
             // data will be forced
             runValidators: true
         })
+
+        // note that no error will be resulted if didn't find the job to get or update
+        // or delete
+        if(!job) {
+            return next(new AppError('No job found with that ID', 404))
+        }
     
         res.status(200).json({
             status: 'success',
@@ -104,31 +116,26 @@ exports.updateJob = async (req, res) => {
                 job
             }
         })
-    } catch (error) {
-        res.status(404).json({
-            status: 'failed',
-            message: error
-        })
-        
     }
-}
+)
 
-exports.deleteJob = async (req, res) => {
-    try {
+exports.deleteJob = catchAsync(
+    async (req, res, next) => {
         const id = req.params.id
         const job = await Job.findByIdAndDelete(id)
+
+        // note that no error will be resulted if didn't find the job to get or update
+        // or delete
+        if(!job) {
+            return next(new AppError('No job found with that ID', 404))
+        }
 
         res.status(204).json({
             status: 'success',
         })
-    } catch (error) {
-        res.status(404).json({
-            status: 'failed',
-            message: error
-        })
     }
+)
 
-}
 // Alias
 exports.lastFiveJobsAlias = (req, res, next) => {
     let queryObj = req.query
@@ -144,8 +151,8 @@ exports.lastFiveJobsAlias = (req, res, next) => {
     next()
 }
 
-exports.getStats = async (req, res) => {
-    try {
+exports.getStats = catchAsync(
+    async (req, res) => {
             // Expressions only provides additional features to queries
             const stats =   await Job.aggregate(
             [
@@ -204,13 +211,6 @@ exports.getStats = async (req, res) => {
                 stats
             }
         })
-    } catch(error) {
-        console.log(error)
-        res.status(404).json({
-            status: 'failed',
-            message: error
-        })
+
     }
-
-
-}
+)

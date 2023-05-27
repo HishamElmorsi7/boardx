@@ -2,20 +2,25 @@ const mongoose = require('mongoose')
 // for more validation to plugin within our mongoose 
 const validator = require('validator')
 
+// unique won't work when there is already duplicates in the DB
 const jobSchema = new mongoose.Schema({
     title: {
+        // To make it unique, I created an index with it from terminal
+        // when I tried from here mongoose should have created index
+        // but it didn't
         type: String,
-        unique: true,
         trim: true,
         required: [true, 'A job must have a title'],
         maxlength: [40, 'The title must be less than or equal to 40'],
         minlength: [4, 'The title must be greater than or equal to 4 '],
-        validate: {
-            validator: function(value){
-                return validator.equals(value, 'junior')
-            },
-            message: 'must be junior'
-        }
+        // validate: {
+        // custom validation function
+
+        //     validator: function(value){
+        //         return validator.equals(value, 'junior')
+        //     },
+        //     message: 'must be junior'
+        // }
     },
 
     description: {
@@ -74,7 +79,6 @@ const jobSchema = new mongoose.Schema({
             validator: function(val){
                 // This here only pints to current document on new document creation
                 // so it won't work with update and this.rating will be undefined 
-                console.log(this.rating)
                 return this.rating > 2.5
             },
 
