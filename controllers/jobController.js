@@ -23,7 +23,7 @@ exports.getAllJobs = catchAsync(
         const queryString = req.query
 
         // x + 1 will result in something went wrong as it is non operational
-        x + 1
+        // x + 1
         const apiFeatures = new ApiFeatures(query, queryString)
         apiFeatures
             .filter()

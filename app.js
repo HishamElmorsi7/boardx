@@ -1,5 +1,6 @@
 const express = require('express');
 const jobRouter = require('./routes/jobRoutes')
+const userRouter = require('./routes/userRoutes')
 const AppError = require('./utils/appError')
 const globalErrorHandler = require('./controllers/errorController')
 
@@ -10,6 +11,7 @@ app.use(express.json())
 
 // ROUTES
 app.use('/api/v1/jobs', jobRouter)
+app.use('/api/v1/users', userRouter)
 
 // NON EXISTING ROUTES
 // all here matches all http methods
@@ -23,7 +25,7 @@ app.all('*', (req, res, next)=> {
     // res.status(404).json({
     //     status: 'fail',
     //     message: `Can't find ${req.originalUrl} on the server`
-    // })`Can't find ${req.originalUrl} on the server`
+    // })
 
     // What we pass to Error constructor is the message that we can call with error.message()
     // const error = new Error(`Can't find ${req.originalUrl} on the server`)
@@ -35,6 +37,6 @@ app.all('*', (req, res, next)=> {
     
     next(new AppError(`Can't find ${req.originalUrl} on the server`, 404))
 })
-// Remember that the middleware is called and passed the args by expres
+// Remember that the middleware is called and passed the args by express
 app.use(globalErrorHandler)
 module.exports = app

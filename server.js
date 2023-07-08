@@ -1,5 +1,9 @@
 const mongoose = require('mongoose')
 const dotenv = require('dotenv')
+dotenv.config({path: './config.env'})
+
+const app = require('./app')
+
 
 // Uncaught exceptions (bugs) are exceptions that comes from sync but were not caught
 // console.log(x)
@@ -19,9 +23,7 @@ process.on('uncaughtException', (error) => {
 
 })
 
-const app = require('./app')
 
-dotenv.config({path: './config.env'})
 
 DB = process.env.DATABASE_LOCAL
 
@@ -30,6 +32,7 @@ mongoose.connect(DB, {
     useUnifiedTopology: true,
 })
 .then(() => {console.log('Connected successfully with DB')})
+.catch(error => console.log(error))
 // if process.env.PORT is undefined port 3000 will be used
 const port = process.env.PORT || 3000
 const server = app.listen(port, ()=>{

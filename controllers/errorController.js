@@ -58,6 +58,8 @@ const sendProductionError = (error, res) => {
 }
 
 module.exports = (error, req, res, next) => {
+    console.log('hello')
+    // console.log(process.env);
     // process.env.NODE_ENV === 'development' ? sendDevError() : sendProductionError()
     if ( process.env.NODE_ENV === 'development'){
         sendDevError(error, res) 
