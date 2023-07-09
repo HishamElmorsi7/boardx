@@ -22,7 +22,7 @@ const handleValidationError = (error) => {
 
 
 const sendDevError = (error, res) => {
-    error.statusCode = error.code.statusCode || 500
+    error.statusCode = error.statusCode || 500
     error.status = error.status || 'error'
 
     res.status(error.statusCode).json({
